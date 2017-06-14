@@ -1,0 +1,25 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+
+<script src="Http.js"></script>
+<script>
+(function(){
+
+	var http = Http('package.json', {"thing": "other"});
+	
+	
+	
+	http.get({ "first": "lorem", "second": "ipsum"}).then(function(res) { return JSON.parse(res); }).then(function(res) { console.log(res); });
+	
+})();
+</script>
+</body>
+</html>

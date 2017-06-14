@@ -10,63 +10,87 @@
         root.Http = factory();
   }
 }(this, function () {
-	return class $http {
-		constructor(url) {
-			this.url = url;
+	class Http {
+		constructor(url, options = {}) {
+			this._headers = {};
+			this._data = {};
 			this.client = new XMLHttpRequest();
-			return this._methods();
 		}
 	
-		ajax(method, options = {}) {
-			return new Promise((resolve, reject) => {
-				var params = [], data = null;
-	
+		request(method, data) {
+			let isData = Object.keys(this.data()).length, 
+				headers = Object.keys(this._headers);
 				
-				if ( options.data ) {
-					for (var key in options.data) {
-						if(options.data.hasOwnProperty(key)) { 
-							params.push(encodeURI(key) + "=" + encodeURI(options.data[key])); 
-						} 
-					}
+			this.url = url + (isData && ["get","delete"].indexOf(method)>-1 ? ("?" + this._formatData()) : "");
+
+			this.client.open(method, this.url);
+			
+			if ( headers.length ) {
+				headers.forEach(key => this.client.setRequestHeader(key, this._headers[key]));
+			}
+			
+			if ( isData && !this._headers["Content-type"]) {
+				this.client.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			}			
 					
-					if (method.toUpperCase() == "GET") {
-						this.url += "?" + params.join("&");
-					} else if (method.toUpperCase() === "POST") {
-						data = params.join("&");
-					}
-				}
-				
-				this.client.addEventListener("load", () => (this.client.status >= 200 && this.client.status < 300) ? resolve(JSON.parse(this.client.response), this.client) : reject(this.client));
-	
-				this.client.addEventListener("error", () => reject(this.client));
-				
-				this.client.open(method, this.url);
-	
-				if ( options.data ) {
-					this.client.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				}
-				
-				if ( options.headers ) {
-					options.headers.forEach(h => {
-						var k = Object.keys(h)[0];
-						this.client.setRequestHeader(k, h[k]);
-					});
-				}
-	
-				if ( data ) { 
-					this.client.send(data);
-				} else {
-					this.client.send();
-				}
+			return new Promise((good, bad) => {
+				this.client.addEventListener("load", () => (this._is200()) ? good(this.client.response, this.client) : bad(this.client));
+				this.client.addEventListener("error", () => bad(this.client));	
+				this.client.send((isData && ["post","put"].indexOf(method)>-1)?this._formatData():null);
 			});	
 		}
-		
-		_methods() {
-			var methods = {};
-			["get", "post", "put", "devare"].forEach(m => methods[m] = (o => this.ajax(m,o)));
+
+
+		/*******************
+		*** ajax methods ***
+		*******************/		
+		get(url,data,options) { return this.request("get",url,data,options); }
+		post(url,data,options) { return this.request("post",url,data,options); }
+		put(url,data,options) { return this.request("put",url,data,options); }
+		delete(url,data,options) { return this.request("delete",url,data,options); }
 	
-			return methods;
+	
+		/**************
+		*** helpers ***
+		**************/
+		headers(header = null) {
+			if ( header ) {
+				Object.keys(header).forEach(k => this._headers[k] = header[k]);
+				return this;
+			} else {
+				return this._headers;
+			}
 		}
 		
+		data(data) {
+			if ( data ) {
+				Object.keys(data).forEach(k => this._data[encodeURI(k)] = encodeURI(data[k]));
+				return this;
+			} else {
+				return this._data;
+			}			
+		}
+		
+		
+		/**********************
+		*** private helpers ***
+		**********************/
+		_formatData() {
+			return Object.keys(this._data).map(key => key + "=" + this._data[key]).join("&");
+		}
+	
+		_addHeaders(headers) {
+			headers.forEach(h => {
+				let k = Object.keys(h)[0];
+				this.client.setRequestHeader(k, h[k]);
+			});
+		}
+		
+		_is200() {
+			return this.client.status >= 200 && this.client.status < 300;
+		}	
 	}
+	
+	return function() { return new Http(); }
+	
 }));
