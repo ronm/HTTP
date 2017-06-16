@@ -13,11 +13,10 @@
 <script>
 (function(){
 
-	var http = Http('package.json', {"thing": "other"});
+	var http = new Http({headers: {"Content-type": "application/x-www-form-urlencoded"}});
 	
 	
-	
-	http.get({ "first": "lorem", "second": "ipsum"}).then(function(res) { return JSON.parse(res); }).then(function(res) { console.log(res); });
+	http.get('package.json', { "first": "lorem", "second": "ipsum"}).then(function(res) { return JSON.parse(res); }).then(function(res) { console.log(res); });
 	
 })();
 </script>
