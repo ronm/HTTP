@@ -52,7 +52,14 @@ new Http().delete(url,data);
 #### put
 
 ```js
-new Http().put(url,data);;
+new Http().put(url,data);
+```
+
+
+#### jsonp
+
+```js
+new Http().jsonp(url);
 ```
 
 

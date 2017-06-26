@@ -42,7 +42,6 @@
 			});
 		}
 
-
 		/*******************
 		*** ajax methods ***
 		*******************/		
@@ -50,7 +49,21 @@
 		post(url,data) { return this.request("post",url,data); }
 		put(url,data) { return this.request("put",url,data); }
 		delete(url,data) { return this.request("delete",url,data); }
-		
+		jsonp(url, callbackKey = "callback") { 		
+			return new Promise((good, bad) => { 
+				var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random()),
+				script = document.createElement('script');
+
+				window[callbackName] = function(data) {
+					delete window[callbackName];
+					document.body.removeChild(script);
+					good(data);
+				};
+				
+				script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + callbackKey + '=' + callbackName;
+				document.body.appendChild(script);
+			});
+		}
 		
 		/**********************
 		*** private helpers ***
@@ -66,9 +79,5 @@
 		_is200() {
 			return this.client.status >= 200 && this.client.status < 300;
 		}
-		
-		// *** Options
-		// add form headers by deafult for post
-		// parseJSON
 	}	
 }));
