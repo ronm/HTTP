@@ -13,7 +13,8 @@
 <script>
 (function(){
 
-	var http = new Http({headers: {"Content-type": "application/x-www-form-urlencoded"}});
+	var http = new Http({headers: {"thing": "other"}});
+	
 	
 	
 	http.get('package.json', { "first": "lorem", "second": "ipsum"}).then(function(res) { return JSON.parse(res); }).then(function(res) { console.log(res); });
