@@ -69,7 +69,7 @@
 		*** private helpers ***
 		**********************/
 		_formatData(data = {}) {
-			return Object.keys(data).map(key => key + "=" + data[key]).join("&");
+			return Object.keys(data).map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key])).join("&");
 		}
 		
 		_addHeaders(headers = {}) {
